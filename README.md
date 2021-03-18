@@ -19,3 +19,6 @@ Fetch the godot-openvr one from the godot AssetLib
 Copy the godot_ovrmobile one from the https://github.com/NeoSpark314/godot_oculus_quest_toolkit/tree/master/addons/godot_ovrmobile 
 until the AssetLib one is updated.
 
+# Setup
+
+Remember when using the OQ_Toolkit you need to set the Autoload to vr = OQ_Toolkit/vr_autoload.gd 
