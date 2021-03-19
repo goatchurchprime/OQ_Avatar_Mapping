@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://OQ_Toolkit/OQ_ARVRCamera.tscn" type="PackedScene" id=1]
 [ext_resource path="res://OQ_Toolkit/OQ_LeftController.tscn" type="PackedScene" id=2]
@@ -7,6 +7,7 @@
 [ext_resource path="res://OQ_Toolkit/OQ_ARVROrigin.tscn" type="PackedScene" id=5]
 [ext_resource path="res://avatarassets/mozillabasic/AvatarBot_base_for_export_altbody.glb" type="PackedScene" id=6]
 [ext_resource path="res://Main.gd" type="Script" id=7]
+[ext_resource path="res://OQ_Toolkit/OQ_ARVRController/models3d/OculusQuestHand_Left.gltf" type="PackedScene" id=8]
 
 [sub_resource type="QuadMesh" id=1]
 size = Vector2( 10, 10 )
@@ -44,3 +45,6 @@ material/0 = SubResource( 4 )
 
 [node name="avatar" parent="." instance=ExtResource( 6 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.92962 )
+
+[node name="OculusQuestHand_Left" parent="." instance=ExtResource( 8 )]
+transform = Transform( 1, 0, 0, 0, -0.344364, -0.938836, 0, 0.938836, -0.344364, 0.29285, 1.6361, -1.50923 )

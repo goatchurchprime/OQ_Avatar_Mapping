@@ -38,8 +38,8 @@ enum OVRBone { # https://developer.oculus.com/documentation/unity/unity-handtrac
 
 const bonemapping = [ 
 	"hand_index_1", OVRBone.Hand_Index1, 
-	"hand_index_2", OVRBone.Hand_Index1, 
-	"hand_index_3", OVRBone.Hand_Index1, 
+	"hand_index_2", OVRBone.Hand_Index2, 
+	"hand_index_3", OVRBone.Hand_Index3, 
 	"hand_middle_1", OVRBone.Hand_Middle1, 
 	"hand_middle_2", OVRBone.Hand_Middle2, 
 	"hand_middle_3", OVRBone.Hand_Middle3, 
@@ -59,6 +59,10 @@ var gheadposerest
 var glefthandposerest
 var grighthandposerest
 
+var middleEyeMatrix
+var invMiddleEyeToHead
+var invHipsToHeadVector
+
 func _ready():
 	print(ARVRServer.get_interfaces())
 	if ARVRServer.find_interface("OVRMobile"):
@@ -66,12 +70,17 @@ func _ready():
 	if vrenabled:
 		vr.initialize()
 	print(len(test_pose_left_ThumbsUp))
+
+	for i in range(avatarskeleton.get_bone_count()):
+		avatarskeleton.set_bone_pose(i, Transform())
+
+	#avatarskeleton.set_bone_pose(avatarskeleton.find_bone("left_hand"), Transform(Basis(Vector3(1,0,0), deg2rad(-90))))
 	for i in range(0, len(bonemapping), 2):
-		break #  not working
 		var j = avatarskeleton.find_bone("left_"+bonemapping[i])
 		var q = test_pose_left_ThumbsUp[bonemapping[i+1]]
-		var gp = avatarskeleton.get_bone_global_pose(j)
-		avatarskeleton.set_bone_pose(j, Transform(gp.inverse().basis*Basis(q)))
+		var gp = avatarskeleton.get_bone_rest(j)
+		q = Quat(q.z, q.x, q.y, q.w) # Vector3(1,0,0), deg2rad(90))
+		avatarskeleton.set_bone_pose(j, Transform(gp.basis.inverse()*Basis(q)))
 
 	var hipheight = 1.2
 	var bhips = avatarskeleton.find_bone("hips")
@@ -80,6 +89,28 @@ func _ready():
 	gheadposerest = avatarskeleton.get_bone_global_pose(avatarskeleton.find_bone("head"))
 	grighthandposerest = avatarskeleton.get_bone_global_pose(avatarskeleton.find_bone("right_hand"))
 	glefthandposerest = avatarskeleton.get_bone_global_pose(avatarskeleton.find_bone("left_hand"))
+	
+	var middleEyePosition = 0.5*(avatarskeleton.get_bone_rest(avatarskeleton.find_bone("left_eye")).origin + avatarskeleton.get_bone_rest(avatarskeleton.find_bone("right_eye")).origin)
+	middleEyeMatrix = Transform(Basis(), middleEyePosition)
+	invMiddleEyeToHead = middleEyeMatrix.inverse()
+	invHipsToHeadVector = -(avatarskeleton.get_bone_rest(avatarskeleton.find_bone("spine")).origin + avatarskeleton.get_bone_rest(avatarskeleton.find_bone("neck")).origin + avatarskeleton.get_bone_rest(avatarskeleton.find_bone("head")).origin)
+	
+	
+	var skeleton = $OculusQuestHand_Left/ArmatureLeft/Skeleton
+	for i in range(0, skeleton.get_bone_count()):
+		break
+		var bone_rest = skeleton.get_bone_rest(i);
+		if i == 0:
+			bone_rest.basis = Basis()
+		skeleton.set_bone_pose(i, Transform(bone_rest.basis))
+		bone_rest.basis = Basis()
+		skeleton.set_bone_rest(i, bone_rest)
+	var _vrapi2hand_bone_map = [0, 23,  1, 2, 3, 4,  6, 7, 8,  10, 11, 12,  14, 15, 16, 18, 19, 20, 21];
+	for i in range(19):
+		var j = _vrapi2hand_bone_map[i]
+		var bone_rest = skeleton.get_bone_rest(j);
+		skeleton.set_bone_pose(j, (bone_rest.basis.inverse()*Basis(test_pose_left_ThumbsUp[i])))
+	
 	
 func _process(delta):
 	var hipheight = 1.2
@@ -105,5 +136,29 @@ func _process(delta):
 	left_hand.origin.x = -(left_hand.origin.x - cpos.x)
 	left_hand.origin.z = -(left_hand.origin.z - cpos.z)
 	var brl = avatarskeleton.find_bone("left_hand")
+	left_hand.basis = Basis(Vector3(0,0,1), deg2rad(90))*Basis(Vector3(0,0,1), deg2rad(180))
 	avatarskeleton.set_bone_pose(brl, glefthandposerest.inverse()*left_hand)
 
+
+	# attempts to scavenge code from Hubs IK module
+	var flipY = Transform(Basis(Vector3(0,1,0), deg2rad(180)))
+	var cameraForward = $OQ_ARVROrigin/OQ_ARVRCamera.transform*flipY
+	var headTransform = cameraForward*invMiddleEyeToHead
+	#$avatar.transform.origin = Vector3(0, headTransform.origin.y, 0) + invHipsToHeadVector
+	
+	var cameraYRotation = cameraForward.basis.get_euler() # YXZ not "YXZ"
+	cameraYRotation.x = 0;
+	cameraYRotation.z = 0;
+	var cameraYQuaternion = Quat(cameraYRotation)
+	# cameraYQuaternion is then slerped in the Mozilla code
+	#$avatar.transform.basis = Basis(cameraYQuaternion)
+	
+	var invHipsQuaternion = Quat($avatar.transform.basis).inverse()
+	var headquaternion = invHipsQuaternion*Quat(headTransform.basis)
+	var rootToChest = $avatar.transform*avatarskeleton.get_bone_rest(avatarskeleton.find_bone("spine"))
+	var invRootToChest = rootToChest.inverse()
+
+	#handMatrix.multiplyMatrices(this.invRootToChest, controllerObject3D.matrix);
+	#handMatrix.multiply(handRotation);
+	#handObject3D.position.setFromMatrixPosition(handMatrix);
+	#handObject3D.rotation.setFromRotationMatrix(handMatrix);
