@@ -30,6 +30,7 @@ vrenabled = false
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )
 
 [node name="OQ_ARVRCamera" parent="OQ_ARVROrigin" instance=ExtResource( 1 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, -0.811653 )
 
 [node name="OQ_LeftController" parent="OQ_ARVROrigin" instance=ExtResource( 2 )]
 
@@ -48,3 +49,6 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.92962 )
 
 [node name="OculusQuestHand_Left" parent="." instance=ExtResource( 8 )]
 transform = Transform( 1, 0, 0, 0, -0.344364, -0.938836, 0, 0.938836, -0.344364, 0.29285, 1.6361, -1.50923 )
+
+[node name="OculusQuestHand_Left2" parent="." instance=ExtResource( 8 )]
+transform = Transform( 1, 0, 0, 0, -0.344364, -0.938836, 0, 0.938836, -0.344364, 0.766587, 0.302176, -2.02802 )
