@@ -12,30 +12,21 @@ enum OVRSkeleton { # https://developer.oculus.com/documentation/unity/unity-hand
 	Hand_Pinky0      = 15,Hand_Pinky1      = 16,Hand_Pinky2      = 17,Hand_Pinky3      = 18
 }
 
-const qp = [
-	Quat(0, 0, 0, 1), Quat(0, 0, 0, 1), 
-	Quat(0.321311, 0.450518, -0.055395, 0.831098),
-	Quat(0.263483, -0.092072, 0.093766, 0.955671), 
-	Quat(-0.082704, -0.076956, -0.083991, 0.990042),
-	Quat(0.085132, 0.074532, -0.185419, 0.976124), 
-
-	Quat(0.010016, -0.068604, 0.563012, 0.823536),
-	Quat(-0.019362, 0.016689, 0.8093, 0.586839), 
-	Quat(-0.01652, -0.01319, 0.535006, 0.844584),
-
-	Quat(-0.072779, -0.078873, 0.665195, 0.738917), 
-	Quat(-0.0125, 0.004871, 0.707232, 0.706854),
-	Quat(-0.092244, 0.02486, 0.57957, 0.809304), 
-
-	Quat(-0.10324, -0.040148, 0.705716, 0.699782),
-	Quat(-0.041179, 0.022867, 0.741938, 0.668812), 
-	Quat(-0.030043, 0.026896, 0.558157, 0.828755),
-
-	Quat(-0.207036, -0.140343, 0.018312, 0.968042), 
-	Quat(0.054699, -0.041463, 0.706765, 0.704111),
-	Quat(-0.081241, -0.013242, 0.560496, 0.824056), 
-	Quat(0.00276, 0.037404, 0.637818, 0.769273),
+const qpthumbsup = [ Quat(0, 0, 0, 1), Quat(0, 0, 0, 1), 
+	Quat(0.321311, 0.450518, -0.055395, 0.831098), Quat(0.263483, -0.092072, 0.093766, 0.955671), Quat(-0.082704, -0.076956, -0.083991, 0.990042), Quat(0.085132, 0.074532, -0.185419, 0.976124), 
+	Quat(0.010016, -0.068604, 0.563012, 0.823536), Quat(-0.019362, 0.016689, 0.8093, 0.586839), Quat(-0.01652, -0.01319, 0.535006, 0.844584),
+	Quat(-0.072779, -0.078873, 0.665195, 0.738917), Quat(-0.0125, 0.004871, 0.707232, 0.706854), Quat(-0.092244, 0.02486, 0.57957, 0.809304), 
+	Quat(-0.10324, -0.040148, 0.705716, 0.699782), Quat(-0.041179, 0.022867, 0.741938, 0.668812), Quat(-0.030043, 0.026896, 0.558157, 0.828755),
+	Quat(-0.207036, -0.140343, 0.018312, 0.968042), Quat(0.054699, -0.041463, 0.706765, 0.704111), Quat(-0.081241, -0.013242, 0.560496, 0.824056), Quat(0.00276, 0.037404, 0.637818, 0.769273),
 ]
+const qprestpose = [ Quat(0, 0, 0, 1), Quat(0, 0, 0, 1), 
+	Quat(0.375387, 0.424584, -0.00777886, 0.823864), Quat(0.26023, 0.0243309, 0.125678, 0.957023), Quat(-0.0827037, -0.0769617, -0.0840623, 0.990036), Quat(0.0835058, 0.0650157, -0.0582741, 0.992675), 
+	Quat(0.0306831, -0.0188556, 0.0432814, 0.998414), Quat(-0.0258524, -0.00711605, 0.00329295, 0.999635), Quat(-0.016056, -0.0271487, -0.0720338, 0.996903), 
+	Quat(-0.00906633, -0.0514656, 0.0518357, 0.997287), Quat(-0.0112282, -0.00437888, -0.00197819, 0.999925), Quat(-0.0343196, -0.00461181, -0.0930074, 0.995063), 
+	Quat(-0.0531593, -0.123103, 0.0498135, 0.989716), Quat(-0.0336325, -0.00278986, 0.00567604, 0.999414), Quat(-0.00347744, 0.0291794, -0.0250285, 0.999255), 
+	Quat(-0.207036, -0.140343, 0.0183118, 0.968042), Quat(0.091113, 0.00407132, 0.0281293, 0.995435), Quat(-0.0376167, -0.0429377, -0.0132862, 0.998281), Quat(0.000644803, 0.0491706, -0.024019, 0.998501)
+]
+
 func setrelpose(s, n, q):
 	var i = s.find_bone(n)
 	assert (i != -1)
@@ -43,9 +34,31 @@ func setrelpose(s, n, q):
 	var tq = t.basis.inverse()*Basis(q)
 	s.set_bone_pose(i, Transform(tq, Vector3(0,0,0)))
 
+func oqsetrelpose(s, qp):
+	setrelpose(s, "b_l_thumb_0", qp[OVRSkeleton.Hand_Thumb0])
+	setrelpose(s, "b_l_thumb_1", qp[OVRSkeleton.Hand_Thumb1])
+	setrelpose(s, "b_l_thumb_2", qp[OVRSkeleton.Hand_Thumb2])
+	setrelpose(s, "b_l_thumb_3", qp[OVRSkeleton.Hand_Thumb3])
+	setrelpose(s, "b_l_index_1", qp[OVRSkeleton.Hand_Index1])
+	setrelpose(s, "b_l_index_2", qp[OVRSkeleton.Hand_Index2])
+	setrelpose(s, "b_l_index_3", qp[OVRSkeleton.Hand_Index3])
+	setrelpose(s, "b_l_middle_1", qp[OVRSkeleton.Hand_Middle1])
+	setrelpose(s, "b_l_middle_2", qp[OVRSkeleton.Hand_Middle2])
+	setrelpose(s, "b_l_middle_3", qp[OVRSkeleton.Hand_Middle3])
+	setrelpose(s, "b_l_ring_1", qp[OVRSkeleton.Hand_Ring1])
+	setrelpose(s, "b_l_ring_2", qp[OVRSkeleton.Hand_Ring2])
+	setrelpose(s, "b_l_ring_3", qp[OVRSkeleton.Hand_Ring3])
+	setrelpose(s, "b_l_pinky_0", qp[OVRSkeleton.Hand_Pinky0])
+	setrelpose(s, "b_l_pinky_1", qp[OVRSkeleton.Hand_Pinky1])
+	setrelpose(s, "b_l_pinky_2", qp[OVRSkeleton.Hand_Pinky2])
+	setrelpose(s, "b_l_pinky_3", qp[OVRSkeleton.Hand_Pinky3])
+
+
 func getbonevector(s, n):
 	var i = s.find_bone(n)
 	return s.get_bone_rest(i).origin
+
+
 
 var ovrbonenames = [ 
 	"thumb_0",  "thumb_1", 	"thumb_2",  "thumb_3",	"thumb_null",
@@ -201,32 +214,29 @@ func _ready():
 	for x in rpmbonenames:
 		v[x] = a.get_bone_rest(a.find_bone("left_hand_"+x)).origin
 		r[x] = Quat(a.get_bone_rest(a.find_bone("left_hand_"+x)).basis)
-	#print(r)
-	
-	s.set_bone_rest(0, Transform(Basis(), Vector3(0,0,0)))
-	setrelpose(s, "b_l_thumb_0", qp[OVRSkeleton.Hand_Thumb0])
-	setrelpose(s, "b_l_thumb_1", qp[OVRSkeleton.Hand_Thumb1])
-	setrelpose(s, "b_l_thumb_2", qp[OVRSkeleton.Hand_Thumb2])
-	setrelpose(s, "b_l_thumb_3", qp[OVRSkeleton.Hand_Thumb3])
-	setrelpose(s, "b_l_index_1", qp[OVRSkeleton.Hand_Index1])
-	setrelpose(s, "b_l_index_2", qp[OVRSkeleton.Hand_Index2])
-	setrelpose(s, "b_l_index_3", qp[OVRSkeleton.Hand_Index3])
-	setrelpose(s, "b_l_middle_1", qp[OVRSkeleton.Hand_Middle1])
-	setrelpose(s, "b_l_middle_2", qp[OVRSkeleton.Hand_Middle2])
-	setrelpose(s, "b_l_middle_3", qp[OVRSkeleton.Hand_Middle3])
-	setrelpose(s, "b_l_ring_1", qp[OVRSkeleton.Hand_Ring1])
-	setrelpose(s, "b_l_ring_2", qp[OVRSkeleton.Hand_Ring2])
-	setrelpose(s, "b_l_ring_3", qp[OVRSkeleton.Hand_Ring3])
-	setrelpose(s, "b_l_pinky_0", qp[OVRSkeleton.Hand_Pinky0])
-	setrelpose(s, "b_l_pinky_1", qp[OVRSkeleton.Hand_Pinky1])
-	setrelpose(s, "b_l_pinky_2", qp[OVRSkeleton.Hand_Pinky2])
-	setrelpose(s, "b_l_pinky_3", qp[OVRSkeleton.Hand_Pinky3])
 
+	var qp = qprestpose # qpthumbsup
+	s.set_bone_rest(0, Transform(Basis(), Vector3(0,0,0)))
+	oqsetrelpose(s, qp)
 	var qwristtransform = s.global_transform
-	var ovrkl = oqknucklelocations(s.global_transform, qp, ovrbonevectorsLeft)
-	$smarker.transform.origin = ovrkl["pinkytip"]
+	var ovrkl = oqknucklelocations(Transform(s.global_transform.basis, Vector3(0,0,0)), qp, ovrbonevectorsLeft)
+	$smarker.transform.origin = ovrkl["pinkytip"] + s.global_transform.origin
+
+	var i = a.find_bone("left_hand")
+	var t = a.global_transform*a.get_bone_global_pose(i)
+	var atoqtrans = Basis(Vector3(1,0,0), deg2rad(-90)).rotated(Vector3(0,1,0), deg2rad(-90))
+	var tq = t.inverse()*Transform(qwristtransform.basis.orthonormalized()*atoqtrans, qwristtransform.origin)
+	a.set_bone_pose(i, tq)
 
 	var awristtransform = a.global_transform*a.get_bone_global_pose(a.find_bone("left_hand"))
-	print("aaa  ", a.get_bone_global_pose(a.find_bone("left_hand")))
-	var rpmkl = rpmknucklelocations(awristtransform, rpmbonequatsrestLeft, rpmbonevectorsLeft)
-	#$smarker.transform.origin = rpmkl["pinkytip"]
+	var rpmkl = rpmknucklelocations(Transform(awristtransform.basis, Vector3(0,0,0)), rpmbonequatsrestLeft, rpmbonevectorsLeft)
+	$smarker.transform.origin = rpmkl["pinkytip"] + awristtransform.origin
+
+	# what rotation will take 
+	for k in [ovrkl, rpmkl]:
+		var vv = { }
+		for ss in k:
+			vv[ss] = k[ss].length()
+		print(vv)
+	#print(ovrkl)
+	#print(rpmkl)
