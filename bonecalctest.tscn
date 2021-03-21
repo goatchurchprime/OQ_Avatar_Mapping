@@ -16,13 +16,12 @@ script = ExtResource( 1 )
 
 [node name="OculusQuestHand_Left" parent="." instance=ExtResource( 2 )]
 transform = Transform( 1, 0, 0, 0, -0.569796, -0.821786, 0, 0.821786, -0.569796, 0, -0.0132402, 0 )
-visible = false
 
 [node name="AvatarBot_base_for_export_altbody" parent="." instance=ExtResource( 3 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.661232, -0.245231, 0 )
 
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 0.964696, -0.0436016, 0.259733, 0.00260849, 0.987734, 0.156123, -0.263355, -0.149934, 0.952976, 0.207394, 0.0315131, 0.278759 )
+transform = Transform( 0.964696, -0.0436016, 0.259733, 0.139039, 0.921885, -0.361657, -0.223675, 0.385002, 0.895401, 0.207394, -0.0193046, 0.278759 )
 
 [node name="smarker" type="MeshInstance" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.827061, -0.562112, 0, 0.562112, 0.827061, 0, 0.0414235, 0 )
