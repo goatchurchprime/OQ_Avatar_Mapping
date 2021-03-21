@@ -213,54 +213,78 @@ func rpmknucklelocations(wristtransform, qp, ovv):
 # Solve for c where (a*b*c).origin = p
 #   c.origin = (a.basis*b.basis).inverse()*(p - a.origin - a.basis*b.origin)
 func solvecorigin(a, b, p):
-	print("a", a)
-	print("b", b)
-	print("p", p)
 	return (a.basis*b.basis).inverse()*(p - a.origin - a.basis*b.origin)
 
+# rotationtoalign(a, b)*a is parallel to b
+func rotationtoalign(a, b):
+	print("a", var2str(a))
+	print("b", var2str(b))
+	var c = a.cross(b)
+	var clength = c.length()
+	var abl = a.length()*b.length()
+	if abl == 0.0 or clength == 0.0:
+		return Basis()
+	var sinrot = clength/(a.length()*b.length())
+	print("ror ", c/clength, asin(sinrot))
+	return Basis(c/clength, asin(sinrot))
+
+func knucklealignedpose(t1, t2rest, t3restmove, kp2, kp3):
+	var t2posemove = solvecorigin(t1, t2rest, kp2)
+	var t2poserot = rotationtoalign(t3restmove, (t1.basis*t2rest.basis).inverse()*(kp3 - kp2))
+	return Transform(t2poserot, t2posemove)
+
+func knucklealignedfinger(a, twrist, fingerrest, absknuckle1pos, absknuckle2pos, absknuckle3pos, absknuckletippos):
+	var bone1pose = knucklealignedpose(twrist, fingerrest["b1rest"], fingerrest["b2rest"].origin, absknuckle1pos, absknuckle2pos)
+	var tindex1 = twrist*fingerrest["b1rest"]*bone1pose
+	var bone2pose = knucklealignedpose(tindex1, fingerrest["b2rest"], fingerrest["b3rest"].origin, absknuckle2pos, absknuckle3pos)
+	var tindex2 = tindex1*fingerrest["b2rest"]*bone2pose
+	var bone3pose = knucklealignedpose(tindex2, fingerrest["b3rest"], fingerrest["b3rest"].origin, absknuckle3pos, absknuckletippos)
+
+	a.set_bone_pose(fingerrest["i1"], bone1pose)
+	a.set_bone_pose(fingerrest["i2"], bone2pose)
+	a.set_bone_pose(fingerrest["i3"], bone3pose)
+
+	return { "bone1pose":bone1pose, "bone2pose":bone2pose, "bone3pose":bone3pose }
+
 func rpmsetrelpose(a, ovrkl, sorigin):
-	var tt
 	var preh = "left_hand_"
 	
 	var bindex_1 = a.find_bone(preh+"index_1")
-	tt = a.global_transform*a.get_bone_global_pose(a.find_bone("left_hand"))
-	var bone1rest = a.get_bone_rest(bindex_1)
-	$smarker.transform.origin = (tt*bone1rest).origin
+	var bindex_2 = a.find_bone(preh+"index_2")
+	var bindex_3 = a.find_bone(preh+"index_3")
+	var bwrist = a.find_bone("left_hand")
 
-	#absknucklepos = (tt*a.get_bone_rest(bindex_1)*bonepos).origin
+	var twrist = a.global_transform*a.get_bone_global_pose(bwrist)
+	var bone1rest = a.get_bone_rest(bindex_1)
+	var bone2rest = a.get_bone_rest(bindex_2)
+	var bone3rest = a.get_bone_rest(bindex_3)
+	
+	var fingerrest = { "i1":bindex_1, "i2":bindex_2, "i3":bindex_3 }
+	fingerrest["b1rest"] = a.get_bone_rest(fingerrest["i1"])
+	fingerrest["b2rest"] = a.get_bone_rest(fingerrest["i2"])
+	fingerrest["b3rest"] = a.get_bone_rest(fingerrest["i3"])
+
+	var fposes = knucklealignedfinger(a, twrist, fingerrest, ovrkl["index1"] + sorigin, ovrkl["index2"] + sorigin, ovrkl["index3"] + sorigin, ovrkl["indextip"] + sorigin)
 
 	var absknuckle1pos = ovrkl["index1"] + sorigin
-	$smarker.transform.origin = absknuckle1pos
-	var boneposemove = solvecorigin(tt, bone1rest, absknuckle1pos)
-	print("bb   ", boneposemove)
-	
-	print(ovrkl["index1"])
-	a.set_bone_pose(bindex_1, Transform(Basis(Vector3(1,0,0), 0), boneposemove))
-
-	# solve for boneposerot such that
-	# (tt*bone1rest*Transform(boneposerot, boneposemove)*bone2rest).origin - (tt*bone1rest*Transform(boneposerot, boneposemove)).origin
-	#  is aligned with absknuckle2pos - absknuckle1pos
-
-	tt = tt*bone1rest*a.get_bone_pose(bindex_1)
-	print(tt)
-	tt = a.global_transform*a.get_bone_global_pose(bindex_1)
-	print(tt)
-	
 	var absknuckle2pos = ovrkl["index2"] + sorigin
-	$smarker.transform.origin = absknuckle2pos
-	var bindex_2 = a.find_bone(preh+"index_2")
-	var bone2rest = a.get_bone_rest(bindex_2)
-	var bone2posemove = solvecorigin(tt, bone2rest, absknuckle2pos)
-	
-	a.set_bone_pose(bindex_2, Transform(Basis(), bone2posemove))
+	var absknuckle3pos = ovrkl["index3"] + sorigin
+	var absknuckletippos = ovrkl["indextip"] + sorigin
 
+	var bone1pose = knucklealignedpose(twrist, bone1rest, bone2rest.origin, absknuckle1pos, absknuckle2pos)
+	var tindex1 = twrist*bone1rest*bone1pose
+	var bone2pose = knucklealignedpose(tindex1, bone2rest, bone3rest.origin, absknuckle2pos, absknuckle3pos)
+	var tindex2 = tindex1*bone2rest*bone2pose
+	var bone3pose = knucklealignedpose(tindex2, bone3rest, bone3rest.origin, absknuckle3pos, absknuckletippos)
 
-	#kl["index1"] = tt.origin
-	#tt = tt*Transform(qp["index_2"], ovv["index_2"])
-	#kl["index2"] = tt.origin
-	#tt = tt*Transform(qp["index_3"], ovv["index_3"])
-	#kl["index3"] = tt.origin
-	#kl["indextip"] = tt.xform(ovv["index_tip"])
+	#a.set_bone_pose(bindex_1, bone1pose)
+	#a.set_bone_pose(bindex_2, bone2pose)
+	#a.set_bone_pose(bindex_3, bone3pose)
+	print("bb1 ", bone1pose, "\n    ", fposes["bone1pose"])
+	print("bb2 ", bone2pose, "\n    ", fposes["bone2pose"])
+	print("bb3 ", bone3pose, "\n    ", fposes["bone3pose"])
+
+	$smarker.transform.origin = absknuckletippos
 
 	
 func _ready():
