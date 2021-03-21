@@ -207,6 +207,61 @@ func rpmknucklelocations(wristtransform, qp, ovv):
 
 	return kl
 
+# Transform equations
+# a*b = Transform(a.basis*b.basis, a.origin + a.basis*b.origin)
+# a*b*c = Transform(a.basis*b.basis*c.basis, a.origin + a.basis*b.origin + a.basis*b.basis*c.origin)
+# Solve for c where (a*b*c).origin = p
+#   c.origin = (a.basis*b.basis).inverse()*(p - a.origin - a.basis*b.origin)
+func solvecorigin(a, b, p):
+	print("a", a)
+	print("b", b)
+	print("p", p)
+	return (a.basis*b.basis).inverse()*(p - a.origin - a.basis*b.origin)
+
+func rpmsetrelpose(a, ovrkl, sorigin):
+	var tt
+	var preh = "left_hand_"
+	
+	var bindex_1 = a.find_bone(preh+"index_1")
+	tt = a.global_transform*a.get_bone_global_pose(a.find_bone("left_hand"))
+	var bone1rest = a.get_bone_rest(bindex_1)
+	$smarker.transform.origin = (tt*bone1rest).origin
+
+	#absknucklepos = (tt*a.get_bone_rest(bindex_1)*bonepos).origin
+
+	var absknuckle1pos = ovrkl["index1"] + sorigin
+	$smarker.transform.origin = absknuckle1pos
+	var boneposemove = solvecorigin(tt, bone1rest, absknuckle1pos)
+	print("bb   ", boneposemove)
+	
+	print(ovrkl["index1"])
+	a.set_bone_pose(bindex_1, Transform(Basis(Vector3(1,0,0), 0), boneposemove))
+
+	# solve for boneposerot such that
+	# (tt*bone1rest*Transform(boneposerot, boneposemove)*bone2rest).origin - (tt*bone1rest*Transform(boneposerot, boneposemove)).origin
+	#  is aligned with absknuckle2pos - absknuckle1pos
+
+	tt = tt*bone1rest*a.get_bone_pose(bindex_1)
+	print(tt)
+	tt = a.global_transform*a.get_bone_global_pose(bindex_1)
+	print(tt)
+	
+	var absknuckle2pos = ovrkl["index2"] + sorigin
+	$smarker.transform.origin = absknuckle2pos
+	var bindex_2 = a.find_bone(preh+"index_2")
+	var bone2rest = a.get_bone_rest(bindex_2)
+	var bone2posemove = solvecorigin(tt, bone2rest, absknuckle2pos)
+	
+	a.set_bone_pose(bindex_2, Transform(Basis(), bone2posemove))
+
+
+	#kl["index1"] = tt.origin
+	#tt = tt*Transform(qp["index_2"], ovv["index_2"])
+	#kl["index2"] = tt.origin
+	#tt = tt*Transform(qp["index_3"], ovv["index_3"])
+	#kl["index3"] = tt.origin
+	#kl["indextip"] = tt.xform(ovv["index_tip"])
+
 	
 func _ready():
 	var v = { }
@@ -215,28 +270,36 @@ func _ready():
 		v[x] = a.get_bone_rest(a.find_bone("left_hand_"+x)).origin
 		r[x] = Quat(a.get_bone_rest(a.find_bone("left_hand_"+x)).basis)
 
-	var qp = qprestpose # qpthumbsup
+	#var qp = qprestpose
+	var qp = qpthumbsup
 	s.set_bone_rest(0, Transform(Basis(), Vector3(0,0,0)))
 	oqsetrelpose(s, qp)
 	var qwristtransform = s.global_transform
 	var ovrkl = oqknucklelocations(Transform(s.global_transform.basis, Vector3(0,0,0)), qp, ovrbonevectorsLeft)
 	$smarker.transform.origin = ovrkl["pinkytip"] + s.global_transform.origin
 
-	var i = a.find_bone("left_hand")
-	var t = a.global_transform*a.get_bone_global_pose(i)
+	var ilh = a.find_bone("left_hand")
+	var t = a.global_transform*a.get_bone_global_pose(ilh)
 	var atoqtrans = Basis(Vector3(1,0,0), deg2rad(-90)).rotated(Vector3(0,1,0), deg2rad(-90))
 	var tq = t.inverse()*Transform(qwristtransform.basis.orthonormalized()*atoqtrans, qwristtransform.origin)
-	a.set_bone_pose(i, tq)
+	a.set_bone_pose(ilh, tq)
+
 
 	var awristtransform = a.global_transform*a.get_bone_global_pose(a.find_bone("left_hand"))
-	var rpmkl = rpmknucklelocations(Transform(awristtransform.basis, Vector3(0,0,0)), rpmbonequatsrestLeft, rpmbonevectorsLeft)
-	$smarker.transform.origin = rpmkl["pinkytip"] + awristtransform.origin
+	var awristtransformZ = Transform(awristtransform.basis, Vector3(0,0,0))
+	rpmsetrelpose(a, ovrkl, s.global_transform.origin)
+	#var rpmkl = rpmknucklelocations(awristtransformZ, rpmbonequatsrestLeft, rpmbonevectorsLeft)
+	#$smarker.transform.origin = rpmkl["pinkytip"] + awristtransform.origin
 
-	# what rotation will take 
-	for k in [ovrkl, rpmkl]:
-		var vv = { }
-		for ss in k:
-			vv[ss] = k[ss].length()
-		print(vv)
-	#print(ovrkl)
-	#print(rpmkl)
+func _physics_process(delta):
+	var cursorx = (-1 if Input.is_action_pressed("ui_left") else 0) + (1 if Input.is_action_pressed("ui_right") else 0)
+	var cursory = (-1 if Input.is_action_pressed("ui_down") else 0) + (1 if Input.is_action_pressed("ui_up") else 0)
+	if cursorx != 0 or cursory != 0:
+		var bindex_1 = a.find_bone("left_hand_index_2")
+		var t = a.get_bone_pose(bindex_1)
+		t.origin.x += cursorx*0.001
+		t.origin.y += cursory*0.001
+		a.set_bone_pose(bindex_1, t)
+	
+	#elif event is InputEventKey:
+	#	if event.scancode == KEY_M:
