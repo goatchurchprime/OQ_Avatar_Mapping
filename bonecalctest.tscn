@@ -1,11 +1,15 @@
-[gd_scene load_steps=7 format=2]
+[gd_scene load_steps=8 format=2]
 
 [ext_resource path="res://bonecalctest.gd" type="Script" id=1]
 [ext_resource path="res://OQ_Toolkit/OQ_ARVRController/models3d/OculusQuestHand_Left.gltf" type="PackedScene" id=2]
 [ext_resource path="res://avatarassets/mozillabasic/AvatarBot_base_for_export_altbody.glb" type="PackedScene" id=3]
 [ext_resource path="res://OQ_Toolkit/OQ_ARVRController/models3d/OculusQuestHand_Right.gltf" type="PackedScene" id=4]
 
+[sub_resource type="SpatialMaterial" id=5]
+albedo_color = Color( 0.976471, 0.00784314, 0.00784314, 1 )
+
 [sub_resource type="SphereMesh" id=1]
+material = SubResource( 5 )
 radius = 0.01
 height = 0.02
 
