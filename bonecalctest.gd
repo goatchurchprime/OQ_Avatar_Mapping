@@ -211,6 +211,8 @@ func getOQskelrestpose(oqhandskeleton):
 		oqrestpose[ambidextrousbonename] = oqhandskeleton.get_bone_rest(i)
 	return oqrestpose
 
+	
+
 func getAvatarhandskelrestpose(avatarskeleton, handname):
 	return { 
 		"thumbrest":makefingerrest(avatarskeleton, handname, "thumb"), 
@@ -221,10 +223,10 @@ func getAvatarhandskelrestpose(avatarskeleton, handname):
 	}
 
 
-func oqsinglefingerknucklelocations(kl, oqrestpose, oqqhandpose, n0, n1, n2, n3, ntip, i0, i1, i2, i3):
-	var t0 = Transform()
+func oqsinglefingerknucklelocations(wristbasis, kl, oqrestpose, oqqhandpose, n0, n1, n2, n3, ntip, i0, i1, i2, i3):
+	var t0 = Transform(wristbasis)
 	if n0 != "":
-		t0 = Transform(oqqhandpose[i0], oqrestpose[n0].origin)
+		t0 = t0*Transform(oqqhandpose[i0], oqrestpose[n0].origin)
 		kl[n0] = t0.origin
 	var t1 = t0*Transform(oqqhandpose[i1], oqrestpose[n1].origin)
 	kl[n1] = t1.origin
@@ -234,32 +236,41 @@ func oqsinglefingerknucklelocations(kl, oqrestpose, oqqhandpose, n0, n1, n2, n3,
 	kl[n3] = t3.origin
 	kl[ntip] = t3.xform(oqrestpose[ntip].origin)
 
-func oqcalcknucklelocations(oqrestpose, oqqhandpose):
+func oqcalcknucklelocations(wristbasis, oqrestpose, oqqhandpose):
 	var kl = { }
-	oqsinglefingerknucklelocations(kl, oqrestpose, oqqhandpose, 
+	oqsinglefingerknucklelocations(wristbasis, kl, oqrestpose, oqqhandpose, 
 		"thumb_0", "thumb_1", "thumb_2", "thumb_3", "thumb_null",
 		OVRSkeleton.Hand_Thumb0, OVRSkeleton.Hand_Thumb1, OVRSkeleton.Hand_Thumb2, OVRSkeleton.Hand_Thumb3)
-	oqsinglefingerknucklelocations(kl, oqrestpose, oqqhandpose, 
+	oqsinglefingerknucklelocations(wristbasis, kl, oqrestpose, oqqhandpose, 
 		"", "index_1", "index_2", "index_3", "index_null",
 		-1, OVRSkeleton.Hand_Index1, OVRSkeleton.Hand_Index2, OVRSkeleton.Hand_Index3)
-	oqsinglefingerknucklelocations(kl, oqrestpose, oqqhandpose, 
+	oqsinglefingerknucklelocations(wristbasis, kl, oqrestpose, oqqhandpose, 
 		"", "middle_1", "middle_2", "middle_3", "middle_null", 
 		-1, OVRSkeleton.Hand_Middle1, OVRSkeleton.Hand_Middle2, OVRSkeleton.Hand_Middle3)
-	oqsinglefingerknucklelocations(kl, oqrestpose, oqqhandpose, 
+	oqsinglefingerknucklelocations(wristbasis, kl, oqrestpose, oqqhandpose, 
 		"", "ring_1", "ring_2", "ring_3", "ring_null",
 		-1, OVRSkeleton.Hand_Ring1, OVRSkeleton.Hand_Ring2, OVRSkeleton.Hand_Ring3)
-	oqsinglefingerknucklelocations(kl, oqrestpose, oqqhandpose, 
+	oqsinglefingerknucklelocations(wristbasis, kl, oqrestpose, oqqhandpose, 
 		"pinky_0", "pinky_1", "pinky_2", "pinky_3", "pinky_null",
 		OVRSkeleton.Hand_Pinky1, OVRSkeleton.Hand_Pinky1, OVRSkeleton.Hand_Pinky2, OVRSkeleton.Hand_Pinky3)
+	return kl
+
+func getoqqresthandposefinger(oqqresthandpose, oqrestpose, names, idxs):
+	assert (len(idxs) == len(names))
+	for i in range(len(idxs)):
+		oqqresthandpose[idxs[i]] = Quat(oqrestpose[names[i]].basis)
 	
 func getoqqresthandpose(oqrestpose):
-	# this needs to refile the quats back into the list based on the vrapi 
-	var oqqresthandpose = { }
-	for k in oqrestpose:
-		oqqresthandpose[k] = Quat(oqrestpose[k].basis)
+	var oqqresthandpose = [ ]
+	for i in range(19):
+		oqqresthandpose.append(Quat())
+	getoqqresthandposefinger(oqqresthandpose, oqrestpose, ["thumb_0", "thumb_1", "thumb_2", "thumb_3"], [OVRSkeleton.Hand_Thumb0, OVRSkeleton.Hand_Thumb1, OVRSkeleton.Hand_Thumb2, OVRSkeleton.Hand_Thumb3])
+	getoqqresthandposefinger(oqqresthandpose, oqrestpose, ["index_1", "index_2", "index_3"], [OVRSkeleton.Hand_Index1, OVRSkeleton.Hand_Index2, OVRSkeleton.Hand_Index3])
+	getoqqresthandposefinger(oqqresthandpose, oqrestpose, ["middle_1", "middle_2", "middle_3"], [OVRSkeleton.Hand_Middle1, OVRSkeleton.Hand_Middle2, OVRSkeleton.Hand_Middle3])
+	getoqqresthandposefinger(oqqresthandpose, oqrestpose, ["ring_1", "ring_2", "ring_3"], [OVRSkeleton.Hand_Ring1, OVRSkeleton.Hand_Ring2, OVRSkeleton.Hand_Ring3])
+	getoqqresthandposefinger(oqqresthandpose, oqrestpose, ["pinky_0", "pinky_1", "pinky_2", "pinky_3"], [OVRSkeleton.Hand_Pinky0, OVRSkeleton.Hand_Pinky1, OVRSkeleton.Hand_Pinky2, OVRSkeleton.Hand_Pinky3])
 	return oqqresthandpose
-
-
+	
 func _ready():
 	# constant geometric information
 	var oqlefthmodel = "res://OQ_Toolkit/OQ_ARVRController/models3d/OculusQuestHand_Left.gltf"
@@ -271,13 +282,15 @@ func _ready():
 	var avatarrighthandrestpose = getAvatarhandskelrestpose(a, "right_hand")
 
 	# pose settings (to be pulled from the vrapi)
-	var oqqlefthandpose = qpthumbsup
-	var oqqrighthandpose = qpthumbsup# getoqqresthandpose(oqrightrestpose)
+	#var oqqlefthandpose = qpthumbsup
+	var oqqlefthandpose = qpthumbsup # getoqqresthandpose(oqleftrestpose)
+	var oqqrighthandpose = getoqqresthandpose(oqrightrestpose)
 
 	# calculating the knuckles in space relative to the wrists
-	var oqleftknuckelocations = oqcalcknucklelocations(oqleftrestpose, oqqlefthandpose)
-	var oqrightknuckelocations = oqcalcknucklelocations(oqrightrestpose, oqqrighthandpose)
-		
+	var oqleftknuckelocations = oqcalcknucklelocations(s.global_transform.basis, oqleftrestpose, oqqlefthandpose)
+	var oqrightknuckelocations = oqcalcknucklelocations(s.global_transform.basis, oqrightrestpose, oqqrighthandpose)
+	print(oqleftknuckelocations)
+	
 	#var qp = qprestpose
 	var qp = qpthumbsup
 	s.set_bone_rest(0, Transform(Basis(), Vector3(0,0,0)))
@@ -285,6 +298,8 @@ func _ready():
 	
 	var qwristtransform = s.global_transform
 	var ovrkl = oqknucklelocations(Transform(s.global_transform.basis, Vector3(0,0,0)), qp, ovrbonevectorsLeft)
+	#ovrkl = oqleftknuckelocations
+	print(ovrkl)
 	$smarker.transform.origin = ovrkl["pinkytip"] + s.global_transform.origin
 
 	var ilh = a.find_bone("left_hand")
