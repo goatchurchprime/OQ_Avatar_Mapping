@@ -55,6 +55,7 @@ func _track_average_velocity(_dt):
 
 # this array is used to get the orientations from the sdk each frame (an array of Quat)
 var _vrapi_bone_orientations = [];
+var _hand_scale = 1.0  # backed up JGT
 
 enum ovrHandFingers {
 	Thumb		= 0,
@@ -267,7 +268,9 @@ func _update_hand_model(param_hand: ARVRController, param_model : Spatial, skele
 	if (vr.ovrBaseAPI && visible): # check if the hand tracking API was loaded
 		# scale of the hand model as reported by VrApi
 		var ls = vr.ovrBaseAPI.get_hand_scale(param_hand.controller_id);
-		if (ls > 0.0): param_model.scale = Vector3(ls, ls, ls);
+		if (ls > 0.0):
+			param_model.scale = Vector3(ls, ls, ls);
+			_hand_scale = ls
 		
 		tracking_confidence = vr.ovrBaseAPI.get_hand_pose(param_hand.controller_id, _vrapi_bone_orientations);
 		if (tracking_confidence > 0.0):

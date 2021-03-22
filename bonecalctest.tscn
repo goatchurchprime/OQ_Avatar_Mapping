@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://bonecalctest.gd" type="Script" id=1]
 [ext_resource path="res://OQ_Toolkit/OQ_ARVRController/models3d/OculusQuestHand_Left.gltf" type="PackedScene" id=2]
 [ext_resource path="res://avatarassets/mozillabasic/AvatarBot_base_for_export_altbody.glb" type="PackedScene" id=3]
+[ext_resource path="res://OQ_Toolkit/OQ_ARVRController/models3d/OculusQuestHand_Right.gltf" type="PackedScene" id=4]
 
 [sub_resource type="SphereMesh" id=1]
 radius = 0.01
@@ -15,8 +16,11 @@ albedo_color = Color( 0.980392, 0.0117647, 0.0117647, 1 )
 script = ExtResource( 1 )
 
 [node name="OculusQuestHand_Left" parent="." instance=ExtResource( 2 )]
-transform = Transform( 1, 0, 0, 0, -0.569796, -0.821786, 0, 0.821786, -0.569796, 0, -0.0132402, 0 )
+transform = Transform( 0.949305, 0.179119, 0.258334, 0.314357, -0.54091, -0.780125, 0, 0.821786, -0.569796, 0.0817581, -0.0132402, 0 )
 visible = false
+
+[node name="OculusQuestHand_Right" parent="." instance=ExtResource( 4 )]
+transform = Transform( -0.484092, 0.875017, 0, -0.875017, -0.484092, 0, 0, 0, 1, 0.0353929, 0.130234, 0 )
 
 [node name="AvatarBot_base_for_export_altbody" parent="." instance=ExtResource( 3 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.661232, -0.245231, 0 )
