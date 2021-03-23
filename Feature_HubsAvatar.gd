@@ -2,6 +2,9 @@ extends Spatial
 
 var oqlefthandcontroller
 var oqrighthandcontroller
+
+# The base avatar can be found here: https://github.com/MozillaReality/hubs-avatar-pipelines/tree/master/Blender/AvatarBot
+# Compatible with the readyplayer.me half-body avatars
 var avatarnode
 var avatarskeleton
 
@@ -12,7 +15,7 @@ var oqrightskeletontransform
 
 var avatarlefthandrestpose
 var avatarrighthandrestpose
-
+var avatarheadrestpose
 
 func _ready():
 	set_as_toplevel(true)
@@ -20,10 +23,12 @@ func _ready():
 	#oqlefthandskeleton = vr.leftController._hand_model.get_node("OculusQuestHand_Left/ArmatureLeft/Skeleton")
 	oqrighthandcontroller = vr.rightController
 	#oqrighthandskeleton = vr.rightController._hand_model.get_node("OculusQuestHand_Right/ArmatureRight/Skeleton")
+
 	avatarnode = get_child(0)
 	avatarskeleton = avatarnode.get_node("AvatarRoot/Skeleton")
 	avatarlefthandrestpose = getAvatarhandskelrestpose(avatarskeleton, "left_hand")
 	avatarrighthandrestpose = getAvatarhandskelrestpose(avatarskeleton, "right_hand")
+	avatarheadrestpose = getAvatarheadskelrestpose(avatarskeleton)
 
 
 enum OVRSkeleton { # https://developer.oculus.com/documentation/unity/unity-handtracking/
@@ -35,15 +40,15 @@ enum OVRSkeleton { # https://developer.oculus.com/documentation/unity/unity-hand
 	Hand_Pinky0      = 15,Hand_Pinky1      = 16,Hand_Pinky2      = 17,Hand_Pinky3      = 18
 }
 
-func makefingerrest(a, handname, fingername):
+func makefingerrest(avatarskeleton, handname, fingername):
 	var fingerrest = { 
-		"i1":a.find_bone(handname+"_"+fingername+"_1"), 
-		"i2":a.find_bone(handname+"_"+fingername+"_2"), 
-		"i3":a.find_bone(handname+"_"+fingername+"_3") 
+		"i1":avatarskeleton.find_bone(handname+"_"+fingername+"_1"), 
+		"i2":avatarskeleton.find_bone(handname+"_"+fingername+"_2"), 
+		"i3":avatarskeleton.find_bone(handname+"_"+fingername+"_3") 
 	}
-	fingerrest["b1rest"] = a.get_bone_rest(fingerrest["i1"])
-	fingerrest["b2rest"] = a.get_bone_rest(fingerrest["i2"])
-	fingerrest["b3rest"] = a.get_bone_rest(fingerrest["i3"])
+	fingerrest["b1rest"] = avatarskeleton.get_bone_rest(fingerrest["i1"])
+	fingerrest["b2rest"] = avatarskeleton.get_bone_rest(fingerrest["i2"])
+	fingerrest["b3rest"] = avatarskeleton.get_bone_rest(fingerrest["i3"])
 	return fingerrest
 
 func getAvatarhandskelrestpose(avatarskeleton, handname):
@@ -54,7 +59,22 @@ func getAvatarhandskelrestpose(avatarskeleton, handname):
 		"ringrest":makefingerrest(avatarskeleton, handname, "ring"),
 		"pinkyrest":makefingerrest(avatarskeleton, handname, "pinky")
 	}
-
+	
+func getAvatarheadskelrestpose(avatarskeleton):
+	var headrest = { }
+	for name in [ "hips", "spine", "neck", "head", "left_eye", "right_eye" ]:
+		var i = avatarskeleton.find_bone(name)
+		headrest["i"+name] = i
+		headrest[name] = avatarskeleton.get_bone_rest(i) 
+	#print(var2str(headrest["left_eye"].basis))
+	#print(var2str(headrest["right_eye"].basis))
+	assert(headrest["left_eye"].basis.x.is_equal_approx(headrest["right_eye"].basis.x))
+	assert(headrest["left_eye"].basis.y.is_equal_approx(headrest["right_eye"].basis.y))
+	assert(headrest["left_eye"].basis.z.is_equal_approx(headrest["right_eye"].basis.z))
+	#print(headrest["left_eye"].basis.is_equal_approx(headrest["right_eye"].basis))
+	#assert (headrest["left_eye"].basis.is_equal_approx(headrest["right_eye"].basis), 1e-3)
+	headrest["middle_eye"] = Transform(headrest["left_eye"].basis, 0.5*(headrest["left_eye"].origin + headrest["right_eye"].origin))
+	return headrest
 
 func getOQskelrestpose(oqhandskeleton):
 	var oqrestpose = { }
@@ -162,14 +182,18 @@ func rpmsetrelpose(avatarskeleton, ovrkl, handname, sorigin):
 	knucklealignedfinger(avatarskeleton, twrist, ringrest, ovrkl, "ring", sorigin)
 	knucklealignedfinger(avatarskeleton, twrist, pinkyrest, ovrkl, "pinky", sorigin)
 
+func rpmsethandposerest(avatarskeleton, handname):
+	for finger in ["thumb", "index", "middle", "ring", "pinky" ]:
+		for n in ["1", "2", "3"]:
+			var i = avatarskeleton.find_bone(handname+"_"+finger+"_"+n)
+			assert (i != -1)
+			avatarskeleton.set_bone_pose(i, Transform())
 
 func basisfromtwovectorplane(a, b):
 	var fz = a.cross(b).normalized()
 	var fx = fz.cross(a + b).normalized()
 	var fy = fz.cross(fx)
 	return Basis(fx, fy, fz)
-
-
 
 func _process(delta):
 	if (vr.leftController.is_hand or vr.rightController.is_hand) and (oqleftrestpose == null):
@@ -178,32 +202,60 @@ func _process(delta):
 
 	# position the head and body of the avatar here
 	# then the hands will be relative to it
+	
+	var camerasightrot = Basis(vr.vrCamera.transform.basis.x, -vr.vrCamera.transform.basis.z, vr.vrCamera.transform.basis.y)
+	var camerasight = Transform(camerasightrot, vr.vrCamera.transform.origin)
+	# solve: 
+	#     camerasight = spinetrans*neckrest*neckrot*headrest*eyerest
+	#   where spinerot=Basis(Vector3(0,1,0), spineang)
+	var spineang = Vector2(camerasight.basis.x.x, camerasight.basis.x.z).angle()
+	var spinerot = Basis(Vector3(0,1,0), spineang)
+	var neckrot = (spinerot*avatarheadrestpose["neck"].basis).inverse()*camerasight.basis*(avatarheadrestpose["head"].basis*avatarheadrestpose["middle_eye"].basis).inverse()
+	var spinetrans = camerasight*(avatarheadrestpose["neck"]*Transform(neckrot, Vector3(0,0,0))*avatarheadrestpose["head"]*avatarheadrestpose["middle_eye"]).inverse()
+	var hipstrans = spinetrans*(avatarheadrestpose["hips"]*avatarheadrestpose["spine"]).inverse()
+	avatarnode.transform = hipstrans
+	avatarskeleton.set_bone_pose(avatarheadrestpose["ineck"], Transform(neckrot, Vector3(0,0,0)))
 
+	var blefthand = avatarskeleton.find_bone("left_hand")
+	# prefer to avoid next line and subsequently use *avatarskeleton.get_bone_pose(blefthand).inverse(), but doesn't work
+	avatarskeleton.set_bone_pose(blefthand, Transform())
+	var avatarleftwristrest = avatarskeleton.global_transform*avatarskeleton.get_bone_global_pose(blefthand) 
 	if vr.leftController.is_hand:
+		vr.leftController.visible = true
 		var hand_scale = vr.leftController._hand_model._hand_scale
 		var oqleftskeletonglobaltransform = vr.leftController.global_transform*oqleftskeletontransform.scaled(Vector3(hand_scale, hand_scale, hand_scale))
 		var oqleftknuckelocations = oqcalcknucklelocations(oqleftskeletonglobaltransform.basis, oqleftrestpose, vr.leftController._hand_model._vrapi_bone_orientations)
 		#$smarker.global_transform.origin = oqleftknuckelocations["pinky_null"] + oqleftskeletonglobaltransform.origin
 
-		var blefthand = avatarskeleton.find_bone("left_hand")
-		avatarskeleton.set_bone_pose(blefthand, Transform())
-		var avatarleftwristrest = avatarskeleton.global_transform*avatarskeleton.get_bone_global_pose(blefthand) # *avatarskeleton.get_bone_pose(blefthand).inverse()
 		var v1 = basisfromtwovectorplane(avatarlefthandrestpose["indexrest"]["b1rest"].origin, avatarlefthandrestpose["pinkyrest"]["b1rest"].origin)
 		var v2 = basisfromtwovectorplane(oqleftknuckelocations["index_1"], oqleftknuckelocations["pinky_1"])
 		var leftwristdestiny = Transform(v2*v1.inverse(), vr.leftController.global_transform.origin)
 		avatarskeleton.set_bone_pose(blefthand, avatarleftwristrest.inverse()*leftwristdestiny)
 		rpmsetrelpose(avatarskeleton, oqleftknuckelocations, "left_hand", oqleftskeletonglobaltransform.origin)
+	else:
+		var leftwristdestiny = vr.leftController.global_transform
+		avatarskeleton.set_bone_pose(blefthand, avatarleftwristrest.inverse()*leftwristdestiny)
+		vr.leftController.visible = true
+		rpmsethandposerest(avatarskeleton, "left_hand")
 
+	var brighthand = avatarskeleton.find_bone("right_hand")
+	avatarskeleton.set_bone_pose(brighthand, Transform())
+	var avatarrightwristrest = avatarskeleton.global_transform*avatarskeleton.get_bone_global_pose(brighthand) # *(avatarskeleton.get_bone_pose(brighthand).inverse())
 	if vr.rightController.is_hand:
+		vr.rightController.visible = false
 		var hand_scale = vr.rightController._hand_model._hand_scale
 		var oqrightskeletonglobaltransform = vr.rightController.global_transform*oqrightskeletontransform.scaled(Vector3(hand_scale, hand_scale, hand_scale))
 		var oqrightknuckelocations = oqcalcknucklelocations(oqrightskeletonglobaltransform.basis, oqrightrestpose, vr.rightController._hand_model._vrapi_bone_orientations)
 
-		var brighthand = avatarskeleton.find_bone("right_hand")
-		avatarskeleton.set_bone_pose(brighthand, Transform())
-		var avatarrightwristrest = avatarskeleton.global_transform*avatarskeleton.get_bone_global_pose(brighthand) # *(avatarskeleton.get_bone_pose(brighthand).inverse())
 		var v1 = basisfromtwovectorplane(avatarrighthandrestpose["indexrest"]["b1rest"].origin, avatarrighthandrestpose["pinkyrest"]["b1rest"].origin)
 		var v2 = basisfromtwovectorplane(oqrightknuckelocations["index_1"], oqrightknuckelocations["pinky_1"])
 		var rightwristdestiny = Transform(v2*v1.inverse(), vr.rightController.global_transform.origin)
 		avatarskeleton.set_bone_pose(brighthand, avatarrightwristrest.inverse()*rightwristdestiny)
 		rpmsetrelpose(avatarskeleton, oqrightknuckelocations, "right_hand", oqrightskeletonglobaltransform.origin)
+	else:
+		var rightwristdestiny = vr.rightController.global_transform
+		avatarskeleton.set_bone_pose(brighthand, avatarrightwristrest.inverse()*rightwristdestiny)
+		vr.rightController.visible = true
+		rpmsethandposerest(avatarskeleton, "right_hand")
+
+	#$smarker.global_transform.origin = avatarskeleton.global_transfoqleftknuckelocations["pinky_null"] + oqleftskeletonglobaltransform.origin
