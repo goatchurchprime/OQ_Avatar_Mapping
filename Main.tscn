@@ -38,9 +38,10 @@ script = ExtResource( 7 )
 vrenabled = false
 
 [node name="OQ_ARVROrigin" parent="." instance=ExtResource( 5 )]
+transform = Transform( -1, 0, -3.25841e-07, 0, 1, 0, 3.25841e-07, 0, -1, 0, 0, 0 )
 
 [node name="OQ_ARVRCamera" parent="OQ_ARVROrigin" instance=ExtResource( 1 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.20248, 1.8, -1.03535 )
+transform = Transform( -1, 0, -3.25841e-07, 0, 1, 0, 3.25841e-07, 0, -1, 3.30949e-07, 0, -1.01568 )
 fov = 67.9
 
 [node name="OQ_LeftController" parent="OQ_ARVROrigin" instance=ExtResource( 2 )]
@@ -50,7 +51,6 @@ visible = false
 visible = false
 
 [node name="Feature_VRSimulator" parent="OQ_ARVROrigin" instance=ExtResource( 4 )]
-info_label_visible = false
 
 [node name="Feature_HubsAvatar" parent="OQ_ARVROrigin" instance=ExtResource( 9 )]
 

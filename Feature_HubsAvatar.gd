@@ -222,8 +222,8 @@ func _process(delta):
 	var avatarleftwristrest = avatarskeleton.global_transform*avatarskeleton.get_bone_global_pose(blefthand) 
 	if vr.leftController.is_hand:
 		vr.leftController.visible = true
-		var hand_scale = vr.leftController._hand_model._hand_scale
-		var oqleftskeletonglobaltransform = vr.leftController.global_transform*oqleftskeletontransform.scaled(Vector3(hand_scale, hand_scale, hand_scale))
+		var hand_scale = vr.leftController._hand_model.model.scale
+		var oqleftskeletonglobaltransform = vr.leftController.global_transform*oqleftskeletontransform.scaled(hand_scale)
 		var oqleftknuckelocations = oqcalcknucklelocations(oqleftskeletonglobaltransform.basis, oqleftrestpose, vr.leftController._hand_model._vrapi_bone_orientations)
 		#$smarker.global_transform.origin = oqleftknuckelocations["pinky_null"] + oqleftskeletonglobaltransform.origin
 
@@ -243,8 +243,8 @@ func _process(delta):
 	var avatarrightwristrest = avatarskeleton.global_transform*avatarskeleton.get_bone_global_pose(brighthand) # *(avatarskeleton.get_bone_pose(brighthand).inverse())
 	if vr.rightController.is_hand:
 		vr.rightController.visible = false
-		var hand_scale = vr.rightController._hand_model._hand_scale
-		var oqrightskeletonglobaltransform = vr.rightController.global_transform*oqrightskeletontransform.scaled(Vector3(hand_scale, hand_scale, hand_scale))
+		var hand_scale = vr.rightController._hand_model.model.scale
+		var oqrightskeletonglobaltransform = vr.rightController.global_transform*oqrightskeletontransform.scaled(hand_scale)
 		var oqrightknuckelocations = oqcalcknucklelocations(oqrightskeletonglobaltransform.basis, oqrightrestpose, vr.rightController._hand_model._vrapi_bone_orientations)
 
 		var v1 = basisfromtwovectorplane(avatarrighthandrestpose["indexrest"]["b1rest"].origin, avatarrighthandrestpose["pinkyrest"]["b1rest"].origin)
