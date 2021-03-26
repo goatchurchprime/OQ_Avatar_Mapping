@@ -18,7 +18,7 @@ var avatarrighthandrestpose
 var avatarheadrestpose
 
 func _ready():
-	set_as_toplevel(true)
+
 	oqlefthandcontroller = vr.leftController
 	#oqlefthandskeleton = vr.leftController._hand_model.get_node("OculusQuestHand_Left/ArmatureLeft/Skeleton")
 	oqrighthandcontroller = vr.rightController
@@ -29,7 +29,7 @@ func _ready():
 	avatarlefthandrestpose = getAvatarhandskelrestpose(avatarskeleton, "left_hand")
 	avatarrighthandrestpose = getAvatarhandskelrestpose(avatarskeleton, "right_hand")
 	avatarheadrestpose = getAvatarheadskelrestpose(avatarskeleton)
-
+	avatarskeleton.get_node("Wolf3D_Hair").visible = false
 
 enum OVRSkeleton { # https://developer.oculus.com/documentation/unity/unity-handtracking/
 	Hand_WristRoot   = 0, Hand_ForearmStub = 1, 
@@ -195,6 +195,8 @@ func basisfromtwovectorplane(a, b):
 	var fy = fz.cross(fx)
 	return Basis(fx, fy, fz)
 
+var n = 0
+var neckrot = 0
 func _process(delta):
 	if (vr.leftController.is_hand or vr.rightController.is_hand) and (oqleftrestpose == null):
 		print("recording the rest pose values from the Quest hand model")
@@ -203,19 +205,30 @@ func _process(delta):
 	# position the head and body of the avatar here
 	# then the hands will be relative to it
 	
-	var camerasightrot = Basis(vr.vrCamera.transform.basis.x, -vr.vrCamera.transform.basis.z, vr.vrCamera.transform.basis.y)
-	var camerasight = Transform(camerasightrot, vr.vrCamera.transform.origin)
+	#var avatareyesightrot = Basis(-vr.vrCamera.transform.basis.x, -vr.vrCamera.transform.basis.z, vr.vrCamera.transform.basis.y)
+	var avatareyesightrot = Basis(vr.vrCamera.transform.basis.x, -vr.vrCamera.transform.basis.z, vr.vrCamera.transform.basis.y)
+	var avatareyesight = Transform(avatareyesightrot, vr.vrCamera.transform.origin)
 	# solve: 
-	#     camerasight = spinetrans*neckrest*neckrot*headrest*eyerest
+	#     avatareyesight = spinetrans*neckrest*neckpose*headrest*headpose*eyerest
 	#   where spinerot=Basis(Vector3(0,1,0), spineang)
-	var spineang = Vector2(camerasight.basis.x.x, camerasight.basis.x.z).angle()
+	var neckrest = avatarheadrestpose["neck"]
+	var headrest = avatarheadrestpose["head"]
+	var eyerest = avatarheadrestpose["middle_eye"]
+	var hipsrest = avatarheadrestpose["hips"]
+	var spinerest = avatarheadrestpose["spine"]
+	#print(avatarskeleton.get_bone_global_pose(avatarskeleton.find_bone("left_eye")))
+	
+	#   headposerot = (spinerot*neckrestrot*headrestrot)^-1 * avatareyesightrot * (eyerestrot)^-1 
+	var spineang = deg2rad(180)-Vector2(avatareyesightrot.x.x, avatareyesightrot.x.z).angle()
 	var spinerot = Basis(Vector3(0,1,0), spineang)
-	var neckrot = (spinerot*avatarheadrestpose["neck"].basis).inverse()*camerasight.basis*(avatarheadrestpose["head"].basis*avatarheadrestpose["middle_eye"].basis).inverse()
-	var spinetrans = camerasight*(avatarheadrestpose["neck"]*Transform(neckrot, Vector3(0,0,0))*avatarheadrestpose["head"]*avatarheadrestpose["middle_eye"]).inverse()
-	var hipstrans = spinetrans*(avatarheadrestpose["hips"]*avatarheadrestpose["spine"]).inverse()
-	avatarnode.transform = hipstrans
-	avatarskeleton.set_bone_pose(avatarheadrestpose["ineck"], Transform(neckrot, Vector3(0,0,0)))
+	var headposerot = (spinerot*neckrest.basis*headrest.basis).inverse() * avatareyesightrot * (eyerest.basis).inverse()
+	var headpose = Transform(headposerot, Vector3(0,0,0))
+	var spinetrans = avatareyesight * (neckrest*headrest*headpose*eyerest).inverse()
 
+	#   spinetrans = avatartrans*hipsrest*spinerest
+	avatarnode.transform = spinetrans * (hipsrest*spinerest).inverse()
+	avatarskeleton.set_bone_pose(avatarheadrestpose["ihead"], headpose)
+	
 	var blefthand = avatarskeleton.find_bone("left_hand")
 	# prefer to avoid next line and subsequently use *avatarskeleton.get_bone_pose(blefthand).inverse(), but doesn't work
 	avatarskeleton.set_bone_pose(blefthand, Transform())
@@ -225,7 +238,6 @@ func _process(delta):
 		var hand_scale = vr.leftController._hand_model.model.scale
 		var oqleftskeletonglobaltransform = vr.leftController.global_transform*oqleftskeletontransform.scaled(hand_scale)
 		var oqleftknuckelocations = oqcalcknucklelocations(oqleftskeletonglobaltransform.basis, oqleftrestpose, vr.leftController._hand_model._vrapi_bone_orientations)
-		#$smarker.global_transform.origin = oqleftknuckelocations["pinky_null"] + oqleftskeletonglobaltransform.origin
 
 		var v1 = basisfromtwovectorplane(avatarlefthandrestpose["indexrest"]["b1rest"].origin, avatarlefthandrestpose["pinkyrest"]["b1rest"].origin)
 		var v2 = basisfromtwovectorplane(oqleftknuckelocations["index_1"], oqleftknuckelocations["pinky_1"])
@@ -258,4 +270,4 @@ func _process(delta):
 		vr.rightController.visible = true
 		rpmsethandposerest(avatarskeleton, "right_hand")
 
-	#$smarker.global_transform.origin = avatarskeleton.global_transfoqleftknuckelocations["pinky_null"] + oqleftskeletonglobaltransform.origin
+
