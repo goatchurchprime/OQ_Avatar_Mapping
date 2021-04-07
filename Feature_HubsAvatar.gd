@@ -183,22 +183,40 @@ func rpmsetwristhandpose(wristtrans, oqrestpose, oqqhandpose, avatarhandrestpose
 	avatarskeleton.set_bone_pose(bonehand, avatarwristrest.inverse()*wristdestiny)
 	rpmsetrelpose(avatarskeleton, oqknuckelocations, handname, wristtrans.origin)
 
-const lefthandgrippose = [ Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0.481135, 0.362292, 0.0918141, 0.792984 ), Quat( 0.261836, -0.0174307, 0.114429, 0.958146 ), Quat( -0.0821178, -0.0532191, 0.188751, 0.977138 ), Quat( 0.0769265, 0.0447865, 0.177054, 0.980168 ), Quat( 0.0123445, -0.100205, 0.315544, 0.943524 ), Quat( -0.0262213, 0.00067591, 0.292588, 0.955879 ), Quat( -0.0166503, -0.025287, 0.0437345, 0.998584 ), Quat( -0.0432909, -0.0737373, 0.475973, 0.875294 ), Quat( -0.012525, 0.00478883, 0.701965, 0.712085 ), Quat( -0.0872469, 0.021686, 0.50748, 0.856961 ), Quat( -0.109041, -0.0885534, 0.542539, 0.828203 ), Quat( -0.0408939, 0.0236673, 0.76361, 0.643947 ), Quat( -0.02363, 0.0285974, 0.413419, 0.909785 ), Quat( -0.207036, -0.140343, 0.0183118, 0.968042 ), Quat( 0.0626236, -0.0343012, 0.503477, 0.861053 ), Quat( -0.0922863, 0.0033893, 0.773326, 0.627247 ), Quat( 0.00225568, 0.0431241, 0.467484, 0.882946 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ) ]
-var lefthandcontrollertohandtransform = str2var(" Transform( -0.268281, 0.961518, -0.059233, -0.0212775, -0.0673864, -0.9975, -0.963106, -0.26635, 0.0385372, -0.0340852, -0.0318247, 0.122327 )")
+const lefthandgrippose1 = [ Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0.481135, 0.362292, 0.0918141, 0.792984 ), Quat( 0.261836, -0.0174307, 0.114429, 0.958146 ), Quat( -0.0821178, -0.0532191, 0.188751, 0.977138 ), Quat( 0.0769265, 0.0447865, 0.177054, 0.980168 ), Quat( 0.0123445, -0.100205, 0.315544, 0.943524 ), Quat( -0.0262213, 0.00067591, 0.292588, 0.955879 ), Quat( -0.0166503, -0.025287, 0.0437345, 0.998584 ), Quat( -0.0432909, -0.0737373, 0.475973, 0.875294 ), Quat( -0.012525, 0.00478883, 0.701965, 0.712085 ), Quat( -0.0872469, 0.021686, 0.50748, 0.856961 ), Quat( -0.109041, -0.0885534, 0.542539, 0.828203 ), Quat( -0.0408939, 0.0236673, 0.76361, 0.643947 ), Quat( -0.02363, 0.0285974, 0.413419, 0.909785 ), Quat( -0.207036, -0.140343, 0.0183118, 0.968042 ), Quat( 0.0626236, -0.0343012, 0.503477, 0.861053 ), Quat( -0.0922863, 0.0033893, 0.773326, 0.627247 ), Quat( 0.00225568, 0.0431241, 0.467484, 0.882946 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ) ]
+var lefthandcontrollertohandtransform1 = str2var("Transform( -0.268281, 0.961518, -0.059233, -0.0212775, -0.0673864, -0.9975, -0.963106, -0.26635, 0.0385372, -0.0340852, -0.0318247, 0.122327 )")
+
+const lefthandgrippose = [ Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0.471764, 0.368524, 0.0825901, 0.796749 ), Quat( 0.252133, 0.153631, 0.159081, 0.942083 ), Quat( -0.0814745, -0.049174, 0.229848, 0.968563 ), Quat( 0.0804535, 0.0542877, 0.0714153, 0.992713 ), Quat( 0.0329857, -0.0055884, 0.135946, 0.990151 ), Quat( -0.0261238, 0.00153864, 0.323206, 0.945967 ), Quat( -0.0168683, -0.024202, 0.102814, 0.994263 ), Quat( -0.0101063, -0.00479251, 0.530312, 0.847729 ), Quat( -0.0124632, 0.00498791, 0.714714, 0.699288 ), Quat( -0.0922695, 0.0248773, 0.579955, 0.809024 ), Quat( -0.0842006, -0.035978, 0.598568, 0.795821 ), Quat( -0.0418505, 0.0196106, 0.652544, 0.75634 ), Quat( -0.0323627, 0.0260134, 0.61143, 0.790209 ), Quat( -0.207036, -0.140343, 0.0183118, 0.968042 ), Quat( 0.0707321, -0.0211219, 0.630092, 0.773003 ), Quat( -0.0801693, -0.0144093, 0.543163, 0.835667 ), Quat( 0.00263388, 0.0391247, 0.593912, 0.803574 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ) ]
+var lefthandcontrollertohandtransform = str2var("Transform( 0.147704, 0.879465, 0.452466, -0.124731, 0.470395, -0.873596, -0.981135, 0.0725972, 0.179176, -0.0600408, -0.0279442, 0.104986 )")
+
+const righthandgrippose = [ Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0.432201, 0.393216, 0.0445541, 0.810308 ), Quat( 0.261818, -0.0168982, 0.114574, 0.958143 ), Quat( -0.0781411, -0.034555, 0.368387, 0.925738 ), Quat( 0.0816343, 0.0580046, 0.0278615, 0.994583 ), Quat( 0.0208749, -0.070101, 0.313543, 0.946753 ), Quat( -0.0261515, 0.00131619, 0.315338, 0.948618 ), Quat( -0.0169508, -0.0236595, 0.130622, 0.991005 ), Quat( -0.0204704, -0.0307655, 0.431432, 0.901388 ), Quat( -0.0119961, 0.00617106, 0.787663, 0.615958 ), Quat( -0.0810382, 0.0180314, 0.424355, 0.901682 ), Quat( -0.100894, -0.077514, 0.531612, 0.837377 ), Quat( -0.0400899, 0.0253736, 0.809323, 0.585445 ), Quat( -0.0232572, 0.0286684, 0.405102, 0.913526 ), Quat( -0.207036, -0.140343, 0.0183118, 0.968042 ), Quat( 0.0704236, -0.0201182, 0.557989, 0.82661 ), Quat( -0.093166, 0.00556991, 0.796621, 0.59723 ), Quat( 0.00212586, 0.0441871, 0.425412, 0.903918 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ), Quat( 0, 0, 0, 1 ) ]
+var righthandcontrollertohandtransform = str2var("Transform( -0.25005, 0.966524, 0.0575051, 0.119603, -0.0281036, 0.992424, 0.960817, 0.255034, -0.108572, 0.0381929, -0.0233026, 0.115482 )")
+
 
 var n = 0
 var neckrot = 0
 
-var lefthandorientations
-var lefthandtransform
-var righthandorientations
-#var righthandtransform
+var Dhandorientations
+var Dhandtransform
+onready var Dhandvrcontroller = vr.rightController
 
 func Doutputcontrollertransform():
 	yield(get_tree().create_timer(0.7), "timeout")
-	print("tt: ", var2str(vr.leftController.transform.inverse()*lefthandtransform))
+	print("tt: ", var2str(Dhandvrcontroller.transform.inverse()*Dhandtransform))
+	
+func Drecordhandpositionforcontrollerpickup():
+	if Dhandvrcontroller.is_hand:
+		if Dhandvrcontroller._hand_model.tracking_confidence == 1.0:
+			Dhandorientations = Dhandvrcontroller._hand_model._vrapi_bone_orientations.duplicate()
+			Dhandtransform = Dhandvrcontroller.transform
+	elif Dhandorientations != null:
+		print("lefthand: ", var2str(Dhandorientations))
+		call_deferred("Doutputcontrollertransform")
+		Dhandorientations = null
 
 func _process(delta):
+	Drecordhandpositionforcontrollerpickup()
+
 	# position the head and body of the avatar here
 	# then the hands will be relative to it
 	
@@ -208,6 +226,7 @@ func _process(delta):
 	# solve: 
 	#     avatareyesight = spinetrans*neckrest*neckpose*headrest*headpose*eyerest
 	#   where spinerot=Basis(Vector3(0,1,0), spineang)
+	
 	var neckrest = avatarheadrestpose["neck"]
 	var headrest = avatarheadrestpose["head"]
 	var eyerest = avatarheadrestpose["middle_eye"]
@@ -226,57 +245,41 @@ func _process(delta):
 	avatarskeleton.set_bone_pose(avatarheadrestpose["ihead"], headpose)
 	
 	var bonelefthand = avatarskeleton.find_bone("left_hand")
+
 	# prefer to avoid next line and subsequently use *avatarskeleton.get_bone_pose(blefthand).inverse(), but doesn't work
 	avatarskeleton.set_bone_pose(bonelefthand, Transform())
 	var avatarleftwristrest = avatarskeleton.global_transform*avatarskeleton.get_bone_global_pose(bonelefthand) 
 	
 	if vr.leftController.is_hand:
-		if vr.leftController._hand_model.tracking_confidence == 1.0:
-			lefthandorientations = vr.leftController._hand_model._vrapi_bone_orientations.duplicate()
-			lefthandtransform = vr.leftController.transform
-
-		
 		vr.leftController.visible = true
 		var oqleftskeletonglobaltransform = vr.leftController.global_transform*oqleftskeletontransform.scaled(vr.leftController._hand_model.model.scale)
 		if vr.leftController._hand_model.tracking_confidence > 0:
 			rpmsetwristhandpose(oqleftskeletonglobaltransform, oqleftrestpose, vr.leftController._hand_model._vrapi_bone_orientations, avatarlefthandrestpose, vr.leftController.global_transform.origin, avatarleftwristrest, avatarskeleton, bonelefthand, "left_hand")
 
-
 	else:
-		if lefthandorientations != null:
-			print("lefthand: ", var2str(lefthandorientations))
-			call_deferred("Doutputcontrollertransform")
-			#print("tt: ", var2str(vr.leftController.transform.inverse()*lefthandtransform))
-			lefthandorientations = null
 		var leftwristdestiny = vr.leftController.global_transform*lefthandcontrollertohandtransform
 		avatarskeleton.set_bone_pose(bonelefthand, avatarleftwristrest.inverse()*leftwristdestiny)
 		vr.leftController.visible = true
 		#rpmsethandposerest(avatarskeleton, "left_hand")
-		if oqleftrestpose != null and oqleftskeletontransform != null:
-			var oqleftskeletonglobaltransform = vr.leftController.global_transform*lefthandcontrollertohandtransform*oqleftskeletontransform
-			rpmsetwristhandpose(oqleftskeletonglobaltransform, oqleftrestpose, lefthandgrippose, avatarlefthandrestpose, (vr.leftController.global_transform*lefthandcontrollertohandtransform).origin, avatarleftwristrest, avatarskeleton, bonelefthand, "left_hand")
+		var oqleftskeletonglobaltransform = leftwristdestiny*oqleftskeletontransform
+		rpmsetwristhandpose(oqleftskeletonglobaltransform, oqleftrestpose, lefthandgrippose, avatarlefthandrestpose, leftwristdestiny.origin, avatarleftwristrest, avatarskeleton, bonelefthand, "left_hand")
 
-
-		else:
-			rpmsethandposerest(avatarskeleton, "left_hand")
 		
 	var bonerighthand = avatarskeleton.find_bone("right_hand")
 	avatarskeleton.set_bone_pose(bonerighthand, Transform())
 	var avatarrightwristrest = avatarskeleton.global_transform*avatarskeleton.get_bone_global_pose(bonerighthand)
 	if vr.rightController.is_hand:
-		righthandorientations = vr.leftController._hand_model._vrapi_bone_orientations.duplicate()
-		vr.rightController.visible = false
+		vr.rightController.visible = true
 		var oqrightskeletonglobaltransform = vr.rightController.global_transform*oqrightskeletontransform.scaled(vr.rightController._hand_model.model.scale)
 		if vr.rightController._hand_model.tracking_confidence > 0:
 			rpmsetwristhandpose(oqrightskeletonglobaltransform, oqrightrestpose, vr.rightController._hand_model._vrapi_bone_orientations, avatarrighthandrestpose, vr.rightController.global_transform.origin, avatarrightwristrest, avatarskeleton, bonerighthand, "right_hand")
 
 	else:
-		if righthandorientations != null:
-			#print("righthand: ", var2str(righthandorientations))
-			righthandorientations = null
-		var rightwristdestiny = vr.rightController.global_transform
+		var rightwristdestiny = vr.rightController.global_transform*righthandcontrollertohandtransform
 		avatarskeleton.set_bone_pose(bonerighthand, avatarrightwristrest.inverse()*rightwristdestiny)
 		vr.rightController.visible = true
 		rpmsethandposerest(avatarskeleton, "right_hand")
+		var oqrightskeletonglobaltransform = rightwristdestiny*oqrightskeletontransform
+		rpmsetwristhandpose(oqrightskeletonglobaltransform, oqrightrestpose, righthandgrippose, avatarrighthandrestpose, rightwristdestiny.origin, avatarrightwristrest, avatarskeleton, bonerighthand, "right_hand")
 
 
